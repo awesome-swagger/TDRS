@@ -10,10 +10,10 @@ services:
     restart: always
     environment:
       - DJANGO_SECRET_KEY=local
+      - OIDC_OP_USER_ENDPOINT=${OIDC_OP_USER_ENDPOINT}
+
     image: tdp
-    build:
-     context: .
-     dockerfile: ./docker/local/Dockerfile
+    build: ./
     command: >
       bash -c "python wait_for_postgres.py &&
                ./manage.py migrate &&

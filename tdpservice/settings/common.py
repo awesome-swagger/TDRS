@@ -201,3 +201,4 @@ class Common(Configuration):
             'rest_framework.authentication.TokenAuthentication',
         )
     }
+    OIDC_OP_USER_ENDPOINT = os.environ['OIDC_OP_USER_ENDPOINT']
