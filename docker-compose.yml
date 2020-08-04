@@ -9,11 +9,12 @@ services:
   web:
     restart: always
     environment:
-      - DJANGO_SECRET_KEY=local
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
       - OIDC_OP_USER_ENDPOINT=${OIDC_OP_USER_ENDPOINT}
-
     image: tdp
-    build: ./
+    build: 
+     context: .
+     dockerfile: ./docker/local/Dockerfile
     command: >
       bash -c "python wait_for_postgres.py &&
                ./manage.py migrate &&
