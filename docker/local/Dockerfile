@@ -17,6 +17,3 @@ WORKDIR /app/
 RUN groupadd -g ${gid} ${group} && useradd -u ${uid} -g ${group} -s /bin/sh ${user}
 
 RUN chown -R user /app
-RUN chmod u+x  gunicorn_start.sh
-
-EXPOSE 8000
