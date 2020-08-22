@@ -63,7 +63,7 @@ docker-compose down --remove-orphans
 
 -   "Test: Execute Python Unit Tests:
 
-`"cd tdrs-backend; docker-compose run tdp sh -c \"python manage.py test\"`
+`"cd tdrs-backend; docker-compose run tdp sh -c \"pytest\"`
 
 -   Test: Execute Python Linting Tests:
 

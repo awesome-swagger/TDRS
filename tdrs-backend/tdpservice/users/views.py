@@ -9,18 +9,25 @@ from .serializers import CreateUserSerializer, UserSerializer
 
 
 class UserViewSet(
-    mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
 ):
-    """Update and retrieve user accounts."""
+    """User accounts viewset."""
 
     queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = (IsUserOrReadOnly,)
 
+    def get_permissions(self):
+        """Get permissions for the viewset."""
+        if self.action == "create":
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [IsUserOrReadOnly]
+        return [permission() for permission in permission_classes]
 
-class UserCreateViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    """Create user account."""
-
-    queryset = User.objects.all()
-    serializer_class = CreateUserSerializer
-    permission_classes = (AllowAny,)
+    def get_serializer_class(self):
+        """Return the serializer class."""
+        if self.action == "create":
+            return CreateUserSerializer
+        return UserSerializer

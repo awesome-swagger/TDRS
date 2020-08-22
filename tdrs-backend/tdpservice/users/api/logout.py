@@ -1,9 +1,9 @@
 """Login.gov/logout is redirected to this endpoint end a django user session."""
 
 from django.contrib.auth import logout
-from django.http import HttpResponse
 
 from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 
@@ -16,11 +16,13 @@ class LogoutUser(APIView):
         try:
             logout(request)
         except Exception:
-            return HttpResponse(
+            return Response(
                 {
-                    "system: User logged out of Login.gov/ "
-                    "Django sessions terminated before local logout"
+                    "system": (
+                        "User logged out of Login.gov/ "
+                        "Django sessions terminated before local logout"
+                    )
                 },
                 status=status.HTTP_200_OK,
             )
-        return HttpResponse({"system: User logged out"}, status=status.HTTP_200_OK)
+        return Response({"system": "User logged out"}, status=status.HTTP_200_OK)

@@ -52,7 +52,6 @@ class LoginRedirectOIDC(RedirectView):
         )
         auth_endpoint_scope = auth_endpoint + "&" + auth_scope
 
-        print
         # update the user session so OIDC logout URL has token_hint
         request.session["state_nonce_tracker"] = {
             "nonce": nonce,

@@ -5,8 +5,6 @@ verify_ssl = true
 
 [dev-packages]
 black = "==19.10b0"
-coverage = "*"
-django-nose = "*"
 mkdocs = "*"
 factory-boy = "*"
 flake8 = "*"
@@ -14,6 +12,8 @@ flake8-docstrings = "*"
 isort = "*"
 nose-progressive = "*"
 pytest = "*"
+pytest-cov = "*"
+pytest-django = "*"
 
 [packages]
 boto3 = "*"
