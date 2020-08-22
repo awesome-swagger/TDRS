@@ -1,10 +1,12 @@
 """Test the custom authorization class."""
 
 import uuid
-from django.test import TestCase
+
 from django.forms.models import model_to_dict
-from .factories import UserFactory
+from django.test import TestCase
+
 from ..authentication import CustomAuthentication
+from .factories import UserFactory
 
 
 class TestCustomAuthentication(TestCase):
@@ -20,13 +22,15 @@ class TestCustomAuthentication(TestCase):
 
     def test_authorization(self):
         """Test authorization method."""
-        user = CustomAuthentication.authenticate(self, username=self.user_data['username'])
-        assert user.username == self.user_data['username']
+        user = CustomAuthentication.authenticate(
+            self, username=self.user_data["username"]
+        )
+        assert user.username == self.user_data["username"]
 
     def test_get_user(self):
         """Test get_user method."""
         user = CustomAuthentication.get_user(self, self.user_id)
-        assert user.username == self.user_data['username']
+        assert user.username == self.user_data["username"]
 
     def test_get_non_user(self):
         """Test that an invalid user does not return a user."""

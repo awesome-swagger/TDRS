@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   zaproxy:
@@ -23,9 +23,9 @@ services:
       - DJANGO_SETTINGS_MODULE=tdpservice.settings.local
       - DJANGO_CONFIGURATION=Local
     image: tdp
-    build: 
-     context: .
-     dockerfile: docker/Dockerfile.local
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.local
     command: >
       bash -c "python wait_for_postgres.py &&
                ./gunicorn_start.sh"

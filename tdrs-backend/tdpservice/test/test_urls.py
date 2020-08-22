@@ -1,7 +1,7 @@
 """Test main routing works."""
 
-from django.urls import reverse
 from django.test import TestCase
+from django.urls import reverse
 
 
 class TestUrlResponses(TestCase):
@@ -9,10 +9,10 @@ class TestUrlResponses(TestCase):
 
     def test_oidc_auth(self):
         """Test login url redirects."""
-        response = self.client.get(reverse('oidc-auth'))
+        response = self.client.get(reverse("oidc-auth"))
         self.assertEqual(response.status_code, 302)
 
     def test_oidc_logout(self):
         """Test logout url redirects."""
-        response = self.client.get(reverse('oidc-logout'))
+        response = self.client.get(reverse("oidc-logout"))
         self.assertEqual(response.status_code, 302)
