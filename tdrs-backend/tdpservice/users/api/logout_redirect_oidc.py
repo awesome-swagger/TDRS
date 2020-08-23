@@ -41,8 +41,6 @@ class LogoutRedirectOIDC(RedirectView):
 
         # remove the token from the session store as it is no longer needed
         del request.session["token"]
-        request.session.save()
-        request.session = request.session.__class__(request.session.session_key)
 
         # params needed by the login.gov/logout endpoint
         logout_params = {

@@ -15,7 +15,9 @@ class LogoutUser(APIView):
         """Destroy user session."""
         try:
             logout(request)
-        except Exception:
+        # TODO: Not sure what exceptions can actually occur here or why.
+        # Can we just remove this?
+        except Exception:  # pragma: nocover
             return Response(
                 {
                     "system": (

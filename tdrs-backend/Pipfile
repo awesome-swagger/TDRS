@@ -14,6 +14,7 @@ nose-progressive = "*"
 pytest = "*"
 pytest-cov = "*"
 pytest-django = "*"
+pytest-mock = "*"
 
 [packages]
 boto3 = "*"
