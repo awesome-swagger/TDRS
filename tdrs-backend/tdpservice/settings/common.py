@@ -53,7 +53,7 @@ class Common(Configuration):
 
     # Those who will receive error notifications from django via email
     ADMINS = (("Admin1", "ADMIN_EMAIL_FIRST"), ("Admin2", "ADMIN_EMAIL_SECOND"))
-    if "VCAP_SERVICES" in os.environ:
+    if "VCAP_SERVICES" in os.environ:  # pragma: nocover
         servicejson = os.environ["VCAP_SERVICES"]
         services = json.loads(servicejson)
         AWS_STORAGE_BUCKET_NAME = services["s3"][0]["credentials"]["bucket"]
@@ -226,7 +226,7 @@ class Common(Configuration):
     LOGOUT_REDIRECT_URL = "http://127.0.0.1:8000"
 
     # conditionally set which URI to go to
-    if "VCAP_APPLICATION" in os.environ:
+    if "VCAP_APPLICATION" in os.environ:  # pragma: nocover
         appjson = os.environ["VCAP_APPLICATION"]
         appinfo = json.loads(appjson)
         if len(appinfo["application_uris"]) > 0:
