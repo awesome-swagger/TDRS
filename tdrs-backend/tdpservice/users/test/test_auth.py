@@ -181,7 +181,7 @@ def test_local_dev_auth(api_client, settings, user):
     user.username = "lda_test"
     user.save()
 
-    # Should be able to update the user without any login.
+    # Should be able to update the user with just the username header.
     response = api_client.patch(
         f"/v1/users/{user.pk}/", {"first_name": "Tom"}, HTTP_X_USERNAME="lda_test",
     )
