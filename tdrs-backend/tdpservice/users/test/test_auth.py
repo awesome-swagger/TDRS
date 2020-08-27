@@ -7,7 +7,6 @@ from django.contrib.auth import get_user_model
 import pytest
 from rest_framework import status
 
-from ..authentication import CustomAuthentication
 from ..api.utils import (
     generate_client_assertion,
     generate_jwt_from_jwks,
@@ -15,6 +14,7 @@ from ..api.utils import (
     response_internal,
     validate_nonce_and_state,
 )
+from ..authentication import CustomAuthentication
 
 test_private_key = """
 -----BEGIN RSA PRIVATE KEY-----
@@ -100,23 +100,21 @@ def test_logout(api_client, user):
     """Test logout."""
     api_client.login(username=user.username, password="test_password")
     response = api_client.get("/v1/logout")
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_302_FOUND
 
 
 @pytest.mark.django_db
 def test_login_without_code(api_client):
-    """Test login fails without code."""
-    response = api_client.get("/v1/login")
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.data == {"error": "OIDC Code not found!"}
+    """Test login redirects without code."""
+    response = api_client.get("/v1/login", {"state": "dummy"})
+    assert response.status_code == status.HTTP_302_FOUND
 
 
 @pytest.mark.django_db
 def test_login_fails_without_state(api_client):
-    """Test login fails without state."""
+    """Test login redirects without state."""
     response = api_client.get("/v1/login", {"code": "dummy"})
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.data == {"error": "OIDC State not found"}
+    assert response.status_code == status.HTTP_302_FOUND
 
 
 @pytest.mark.django_db

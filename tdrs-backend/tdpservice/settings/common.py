@@ -233,5 +233,5 @@ class Common(Configuration):
         if len(appinfo["application_uris"]) > 0:
             os.environ["BASE_URL"] = "https://" + appinfo["application_uris"][0] + "/v1"
 
-
-# configure things set up by cloudfoundry
+    # CORS
+    CORS_ALLOW_CREDENTIALS = True
