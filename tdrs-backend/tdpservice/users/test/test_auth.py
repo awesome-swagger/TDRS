@@ -2,6 +2,8 @@
 import os
 import uuid
 
+from django.contrib.auth import get_user_model
+
 import pytest
 from rest_framework import status
 
@@ -31,6 +33,9 @@ T6dvkLKRvbk42NtigQJAEZasjEA9FtBZL7ZSSTAs9X5OzPgMHOOukCjmyFaLfSO7
 0wBNH/N1oe6U/mTeKdJktsnX1okYbcXxMkGnS2/rUQ==
 -----END RSA PRIVATE KEY-----
 """
+
+User = get_user_model()
+
 
 class MockRequest:
     """Mock request class."""
@@ -166,3 +171,20 @@ def test_generate_token_endpoint_parameters():
     assert "client_assertion_type" in params
     assert "code=test_code" in params
     assert "grant_type=authorization_code" in params
+
+
+@pytest.mark.django_db
+def test_local_dev_auth(api_client, settings, user):
+    """Test local dev authentication."""
+    os.environ["DJANGO_CONFIGURATION"] = "Local"
+    settings.NOLOGIN = True
+    user.username = "lda_test"
+    user.save()
+
+    # Should be able to update the user with just the username header.
+    response = api_client.patch(
+        f"/v1/users/{user.pk}/", {"first_name": "Tom"}, HTTP_X_USERNAME="lda_test",
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data["first_name"] == "Tom"
+    assert User.objects.filter(first_name="Tom").exists()
