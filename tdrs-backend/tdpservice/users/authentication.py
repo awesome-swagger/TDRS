@@ -29,7 +29,7 @@ class CustomAuthentication(BaseAuthentication):
 
 
 class LocalDevelopmentAuthentication(BaseAuthentication):
-    """An authentication class that automatically logs in as a pre-defined user."""
+    """An authentication class that authenticates using a request header."""
 
     def authenticate(self, request):
         """Authenticate against request header."""

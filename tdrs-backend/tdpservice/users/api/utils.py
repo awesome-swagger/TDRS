@@ -26,7 +26,7 @@ Stores the state and nonce generated on login in the the users session
 """
 
 
-def add_state_and_nonce_to_session(request, state, nonce):
+def add_state_and_nonce_to_session(request, state, nonce):  #  pragma: nocover
     """Add state and nonce to session."""
     if "openid_authenticity_tracker" not in request.session or not isinstance(
         request.session["openid_authenticity_tracker"], dict
@@ -150,7 +150,7 @@ Get the original nonce and state from the user session
 """
 
 
-def get_nonce_and_state(request):
+def get_nonce_and_state(request):  # pragma: nocover
     """Get the nonce and state values."""
     if "state_nonce_tracker" not in request.session:
         msg = "error: Could not find session store for nonce and state"
@@ -200,11 +200,10 @@ def response_internal(user, status_message, id_token):
     return response
 
 
-def response_redirect(self, id_token):
+def response_redirect(id_token):
     """
     Redirects to web app with an httpOnly cookie.
 
-    :param self: parameter to permit django python to call a method within its own class
     :param id_token: encoded token returned by login.gov/token
     """
     response = HttpResponseRedirect(os.environ["FRONTEND_BASE_URL"] + "/login")

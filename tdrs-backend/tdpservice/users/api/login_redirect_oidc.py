@@ -58,5 +58,6 @@ class LoginRedirectOIDC(RedirectView):
             "state": state,
             "added_on": time.time(),
         }
+        request.session.modified = True
 
         return HttpResponseRedirect(auth_endpoint_scope)

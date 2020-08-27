@@ -12,6 +12,7 @@ from ..api.utils import (
     generate_jwt_from_jwks,
     generate_token_endpoint_parameters,
     response_internal,
+    response_redirect,
     validate_nonce_and_state,
 )
 from ..authentication import CustomAuthentication
@@ -133,6 +134,13 @@ def test_response_internal(user):
     assert response.status_code == status.HTTP_200_OK
 
 
+@pytest.mark.django_db
+def test_response_redirect(user):
+    """Test response redirect."""
+    response = response_redirect("foo")
+    assert response.status_code == status.HTTP_302_FOUND
+
+
 def test_generate_jwt_from_jwks(mocker):
     """Test JWT generation."""
     mock_get = mocker.patch("requests.get")
@@ -186,3 +194,45 @@ def test_local_dev_auth(api_client, settings, user):
     assert response.status_code == status.HTTP_200_OK
     assert response.data["first_name"] == "Tom"
     assert User.objects.filter(first_name="Tom").exists()
+
+
+@pytest.mark.django_db
+def test_local_dev_auth_non_existent_user(api_client, settings, user):
+    """Test local dev authentication."""
+    os.environ["DJANGO_CONFIGURATION"] = "Local"
+    settings.NOLOGIN = True
+    user.username = "lda_test"
+    user.save()
+
+    # Should be able to update the user with just the username header.
+    response = api_client.patch(
+        f"/v1/users/{user.pk}/", {"first_name": "Tom"}, HTTP_X_USERNAME="aaaaaa",
+    )
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert not User.objects.filter(first_name="Tom").exists()
+
+
+@pytest.mark.django_db
+def test_auth_check(api_client, settings, user):
+    """Test auth check with local dev auth."""
+    os.environ["DJANGO_CONFIGURATION"] = "Local"
+    settings.NOLOGIN = True
+    user.username = "lda_test"
+    user.save()
+
+    response = api_client.get("/v1/auth_check", HTTP_X_USERNAME="lda_test")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data["authenticated"] is True
+
+
+@pytest.mark.django_db
+def test_auth_check_unauthenticated(api_client, settings, user):
+    """Test auth check with local dev auth."""
+    os.environ["DJANGO_CONFIGURATION"] = "Local"
+    settings.NOLOGIN = True
+    user.username = "lda_test"
+    user.save()
+
+    response = api_client.get("/v1/auth_check")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data["authenticated"] is False
