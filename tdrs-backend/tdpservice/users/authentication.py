@@ -2,10 +2,7 @@
 
 from django.contrib.auth import get_user_model
 
-from rest_framework import exceptions
 from rest_framework.authentication import BaseAuthentication
-
-User = get_user_model()
 
 
 class CustomAuthentication(BaseAuthentication):
@@ -13,6 +10,7 @@ class CustomAuthentication(BaseAuthentication):
 
     def authenticate(self, username=None):
         """Authenticate user with the request and username."""
+        User = get_user_model()
         try:
             user = User.objects.get(username=username)
             return user
@@ -21,24 +19,8 @@ class CustomAuthentication(BaseAuthentication):
 
     def get_user(self, user_id):
         """Get user by the user id."""
+        User = get_user_model()
         try:
             return User.objects.get(pk=user_id)
         except User.DoesNotExist:
             return None
-
-
-class LocalDevelopmentAuthentication(BaseAuthentication):
-    """An authentication class that authenticates using a request header."""
-
-    def authenticate(self, request):
-        """Authenticate against request header."""
-        username = request.headers.get("X-Username")
-        if not username:
-            return None
-
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            raise exceptions.AuthenticationFailed("No such user")
-
-        return (user, None)

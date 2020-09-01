@@ -1,9 +1,7 @@
 """Define configuration settings for local environment."""
 import os
 from os.path import dirname, join
-
 from dotenv import load_dotenv
-
 from .common import Common
 
 # load env vars from .env file and override any system environment variables
@@ -24,8 +22,3 @@ class Local(Common):
     EMAIL_HOST = "localhost"
     EMAIL_PORT = 1025
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-    REST_FRAMEWORK = Common.REST_FRAMEWORK
-    REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"].append(
-        "tdpservice.users.authentication.LocalDevelopmentAuthentication",
-    )

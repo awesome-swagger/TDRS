@@ -1,9 +1,6 @@
 """Test the custom authorization class."""
 import os
 import uuid
-
-from django.contrib.auth import get_user_model
-
 import pytest
 from rest_framework import status
 
@@ -12,7 +9,6 @@ from ..api.utils import (
     generate_jwt_from_jwks,
     generate_token_endpoint_parameters,
     response_internal,
-    response_redirect,
     validate_nonce_and_state,
 )
 from ..authentication import CustomAuthentication
@@ -35,8 +31,6 @@ T6dvkLKRvbk42NtigQJAEZasjEA9FtBZL7ZSSTAs9X5OzPgMHOOukCjmyFaLfSO7
 -----END RSA PRIVATE KEY-----
 """
 
-User = get_user_model()
-
 
 class MockRequest:
     """Mock request class."""
@@ -49,7 +43,6 @@ class MockRequest:
         """Return data."""
         return self.data
 
-
 @pytest.mark.django_db
 def test_authentication(user):
     """Test authentication method."""
@@ -57,14 +50,12 @@ def test_authentication(user):
     authenticated_user = auth.authenticate(username=user.username)
     assert authenticated_user.username == user.username
 
-
 @pytest.mark.django_db
 def test_get_user(user):
     """Test get_user method."""
     auth = CustomAuthentication()
     found_user = auth.get_user(user.pk)
     assert found_user.username == user.username
-
 
 @pytest.mark.django_db
 def test_get_non_user(user):
@@ -74,18 +65,15 @@ def test_get_non_user(user):
     nonuser = auth.get_user(test_uuid)
     assert nonuser is None
 
-
 def test_oidc_auth(api_client):
     """Test login url redirects."""
     response = api_client.get("/v1/login/oidc")
     assert response.status_code == status.HTTP_302_FOUND
 
-
 def test_oidc_logout(api_client):
     """Test logout url redirects."""
     response = api_client.get("/v1/logout/oidc")
     assert response.status_code == status.HTTP_302_FOUND
-
 
 def test_oidc_logout_with_token(api_client):
     """Test logging out with token redirects and token is removed."""
@@ -95,7 +83,6 @@ def test_oidc_logout_with_token(api_client):
     response = api_client.get("/v1/logout/oidc")
     assert response.status_code == status.HTTP_302_FOUND
 
-
 @pytest.mark.django_db
 def test_logout(api_client, user):
     """Test logout."""
@@ -103,13 +90,11 @@ def test_logout(api_client, user):
     response = api_client.get("/v1/logout")
     assert response.status_code == status.HTTP_302_FOUND
 
-
 @pytest.mark.django_db
 def test_login_without_code(api_client):
     """Test login redirects without code."""
     response = api_client.get("/v1/login", {"state": "dummy"})
     assert response.status_code == status.HTTP_302_FOUND
-
 
 @pytest.mark.django_db
 def test_login_fails_without_state(api_client):
@@ -117,13 +102,11 @@ def test_login_fails_without_state(api_client):
     response = api_client.get("/v1/login", {"code": "dummy"})
     assert response.status_code == status.HTTP_302_FOUND
 
-
 @pytest.mark.django_db
 def test_login_fails_with_bad_data(api_client):
     """Test login fails with bad data."""
     response = api_client.get("/v1/login", {"code": "dummy", "state": "dummy"})
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-
 
 @pytest.mark.django_db
 def test_response_internal(user):
@@ -132,14 +115,6 @@ def test_response_internal(user):
         user, status_message="hello", id_token={"fake": "stuff"}
     )
     assert response.status_code == status.HTTP_200_OK
-
-
-@pytest.mark.django_db
-def test_response_redirect(user):
-    """Test response redirect."""
-    response = response_redirect("foo")
-    assert response.status_code == status.HTTP_302_FOUND
-
 
 def test_generate_jwt_from_jwks(mocker):
     """Test JWT generation."""
@@ -154,7 +129,6 @@ def test_generate_jwt_from_jwks(mocker):
     mock_get.return_value = MockRequest(data={"keys": [jwk]})
     assert generate_jwt_from_jwks() is not None
 
-
 def test_validate_nonce_and_state():
     """Test nonece and state validation."""
     assert validate_nonce_and_state("x", "y", "x", "y") is True
@@ -162,12 +136,10 @@ def test_validate_nonce_and_state():
     assert validate_nonce_and_state("x", "y", "y", "x") is False
     assert validate_nonce_and_state("x", "z", "y", "y") is False
 
-
 def test_generate_client_assertion():
     """Test client assertion generation."""
     os.environ["JWT_KEY"] = test_private_key
     assert generate_client_assertion() is not None
-
 
 def test_generate_token_endpoint_parameters():
     """Test token endpoint parameter generation."""
@@ -177,62 +149,3 @@ def test_generate_token_endpoint_parameters():
     assert "client_assertion_type" in params
     assert "code=test_code" in params
     assert "grant_type=authorization_code" in params
-
-
-@pytest.mark.django_db
-def test_local_dev_auth(api_client, settings, user):
-    """Test local dev authentication."""
-    os.environ["DJANGO_CONFIGURATION"] = "Local"
-    settings.NOLOGIN = True
-    user.username = "lda_test"
-    user.save()
-
-    # Should be able to update the user with just the username header.
-    response = api_client.patch(
-        f"/v1/users/{user.pk}/", {"first_name": "Tom"}, HTTP_X_USERNAME="lda_test",
-    )
-    assert response.status_code == status.HTTP_200_OK
-    assert response.data["first_name"] == "Tom"
-    assert User.objects.filter(first_name="Tom").exists()
-
-
-@pytest.mark.django_db
-def test_local_dev_auth_non_existent_user(api_client, settings, user):
-    """Test local dev authentication."""
-    os.environ["DJANGO_CONFIGURATION"] = "Local"
-    settings.NOLOGIN = True
-    user.username = "lda_test"
-    user.save()
-
-    # Should be able to update the user with just the username header.
-    response = api_client.patch(
-        f"/v1/users/{user.pk}/", {"first_name": "Tom"}, HTTP_X_USERNAME="aaaaaa",
-    )
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert not User.objects.filter(first_name="Tom").exists()
-
-
-@pytest.mark.django_db
-def test_auth_check(api_client, settings, user):
-    """Test auth check with local dev auth."""
-    os.environ["DJANGO_CONFIGURATION"] = "Local"
-    settings.NOLOGIN = True
-    user.username = "lda_test"
-    user.save()
-
-    response = api_client.get("/v1/auth_check", HTTP_X_USERNAME="lda_test")
-    assert response.status_code == status.HTTP_200_OK
-    assert response.data["authenticated"] is True
-
-
-@pytest.mark.django_db
-def test_auth_check_unauthenticated(api_client, settings, user):
-    """Test auth check with local dev auth."""
-    os.environ["DJANGO_CONFIGURATION"] = "Local"
-    settings.NOLOGIN = True
-    user.username = "lda_test"
-    user.save()
-
-    response = api_client.get("/v1/auth_check")
-    assert response.status_code == status.HTTP_200_OK
-    assert response.data["authenticated"] is False
