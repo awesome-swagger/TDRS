@@ -5,7 +5,6 @@ from django.contrib.auth import get_user_model
 from rest_framework import exceptions
 from rest_framework.authentication import BaseAuthentication
 
-
 User = get_user_model()
 
 
@@ -29,7 +28,7 @@ class CustomAuthentication(BaseAuthentication):
 
 
 class LocalDevelopmentAuthentication(BaseAuthentication):
-    """An authentication class that automatically logs in as a pre-defined user."""
+    """An authentication class that authenticates using a request header."""
 
     def authenticate(self, request):
         """Authenticate against request header."""
