@@ -4,6 +4,8 @@ from django.contrib.auth import get_user_model
 import pytest
 from rest_framework import status
 
+from ..models import STT
+
 User = get_user_model()
 
 
@@ -38,3 +40,75 @@ def test_create_user(api_client, user_data):
     response = api_client.post("/v1/users/", user_data)
     assert response.status_code == status.HTTP_201_CREATED
     assert User.objects.filter(username=user_data["username"]).exists()
+
+
+@pytest.mark.django_db
+def test_get_stts(api_client, user, stts):
+    """Test STT view."""
+    api_client.login(username=user.username, password="test_password")
+    response = api_client.get("/v1/stts/all")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data[0]["id"] == 1
+    assert response.data[0]["stts"][0]["name"] == "Connecticut"
+
+
+@pytest.mark.django_db
+def test_set_profile_data(api_client, user, stts):
+    """Test profile data can be set."""
+    api_client.login(username=user.username, password="test_password")
+    stt_id = STT.objects.first().id
+    response = api_client.post(
+        "/v1/users/set_profile/",
+        {
+            "first_name": "Joe",
+            "last_name": "Bloggs",
+            "stt": stt_id,
+            "requested_role": User.Role.ADMIN,
+        },
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {
+        "first_name": "Joe",
+        "last_name": "Bloggs",
+        "stt": stt_id,
+        "requested_role": User.Role.ADMIN,
+    }
+    user.refresh_from_db()
+    assert user.first_name == "Joe"
+    assert user.last_name == "Bloggs"
+    assert user.stt_id == stt_id
+    assert user.requested_role == User.Role.ADMIN
+    assert user.role is None
+
+
+@pytest.mark.django_db
+def test_set_profile_data_anonymous(api_client, user, stts):
+    """Test can't set profile data if not logged in."""
+    stt_id = STT.objects.first().id
+    response = api_client.post(
+        "/v1/users/set_profile/",
+        {
+            "first_name": "Joe",
+            "last_name": "Bloggs",
+            "stt": stt_id,
+            "requested_role": User.Role.ADMIN,
+        },
+    )
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.django_db
+def test_set_profile_bad_role(api_client, user, stts):
+    """Test only correct role choices are accepted."""
+    api_client.login(username=user.username, password="test_password")
+    stt_id = STT.objects.first().id
+    response = api_client.post(
+        "/v1/users/set_profile/",
+        {
+            "first_name": "Joe",
+            "last_name": "Bloggs",
+            "stt": stt_id,
+            "requested_role": "foo",
+        },
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST

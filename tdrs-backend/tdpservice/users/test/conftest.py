@@ -2,6 +2,8 @@
 
 import uuid
 
+from django.core.management import call_command
+
 import pytest
 
 
@@ -16,3 +18,9 @@ def user_data():
         "password": "correcthorsebatterystaple",
         "auth_token": "xxx",
     }
+
+
+@pytest.fixture
+def stts():
+    """Populate STTs."""
+    call_command("populate_stts")

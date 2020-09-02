@@ -6,10 +6,56 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
+class Region(models.Model):
+    """A model representing a US region."""
+
+    id = models.PositiveIntegerField(primary_key=True)
+
+    def __str__(self):
+        """Return the ID."""
+        return str(self.id)
+
+
+class STT(models.Model):
+    """A model representing a US state, tribe or territory."""
+
+    class STTType(models.TextChoices):
+        """Enum representing types of STT."""
+
+        STATE = "state"
+        TERRITORY = "territory"
+        TRIBE = "tribe"
+
+    type = models.CharField(
+        max_length=200, blank=True, null=True, choices=STTType.choices
+    )
+    code = models.CharField(max_length=2, blank=True, null=True)
+    name = models.CharField(max_length=1000)
+    region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name="stts")
+    # Tribes have a state, which we need to store.
+    state = models.ForeignKey("self", on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        """Return the STT's name."""
+        return self.name
+
+
 class User(AbstractUser):
     """Define user fields and methods."""
 
+    class Role(models.TextChoices):
+        """Enum representing a user's role."""
+
+        ADMIN = "admin"
+        DATA_PREPPER = "data prepper"
+        OFA_ANALYST = "OFA analyst"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    stt = models.ForeignKey(STT, on_delete=models.CASCADE, blank=True, null=True)
+    role = models.CharField(max_length=200, blank=True, null=True, choices=Role.choices)
+    requested_role = models.CharField(
+        max_length=200, blank=True, null=True, choices=Role.choices
+    )
 
     def __str__(self):
         """Return the username as the string representation of the object."""

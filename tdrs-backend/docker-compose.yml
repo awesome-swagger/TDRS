@@ -11,6 +11,8 @@ services:
       - POSTGRES_PASSWORD=something_secure
       - POSTGRES_DB=tdrs_test
       - POSTGRES_PORT=5432
+    volumes:
+      - .data/postgres:/var/lib/postgresql/data:rw,z
   web:
     restart: always
     environment:
@@ -24,7 +26,8 @@ services:
       - DJANGO_CONFIGURATION=Local
       - JWT_KEY=${JWT_KEY}
       - JWT_CERT_TEST=${JWT_CERT_TEST}
-
+    volumes:
+      - ./:/tdpapp
     image: tdp
     build:
       context: .
