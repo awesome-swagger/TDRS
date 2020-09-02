@@ -53,8 +53,10 @@ def test_get_stts(api_client, user, stts):
 
 
 @pytest.mark.django_db
-def test_set_profile_data(api_client, user, stts):
+@pytest.mark.parametrize("role", User.Role.choices)
+def test_set_profile_data(api_client, user, stts, role):
     """Test profile data can be set."""
+    role = role[0]
     api_client.login(username=user.username, password="test_password")
     stt_id = STT.objects.first().id
     response = api_client.post(
@@ -63,7 +65,7 @@ def test_set_profile_data(api_client, user, stts):
             "first_name": "Joe",
             "last_name": "Bloggs",
             "stt": stt_id,
-            "requested_role": User.Role.ADMIN,
+            "requested_role": role,
         },
     )
     assert response.status_code == status.HTTP_200_OK
@@ -71,13 +73,13 @@ def test_set_profile_data(api_client, user, stts):
         "first_name": "Joe",
         "last_name": "Bloggs",
         "stt": stt_id,
-        "requested_role": User.Role.ADMIN,
+        "requested_role": role,
     }
     user.refresh_from_db()
     assert user.first_name == "Joe"
     assert user.last_name == "Bloggs"
     assert user.stt_id == stt_id
-    assert user.requested_role == User.Role.ADMIN
+    assert user.requested_role == role
     assert user.role is None
 
 
