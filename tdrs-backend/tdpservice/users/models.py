@@ -4,6 +4,7 @@ import uuid
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import constraints
 
 
 class Region(models.Model):
@@ -34,6 +35,13 @@ class STT(models.Model):
     region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name="stts")
     # Tribes have a state, which we need to store.
     state = models.ForeignKey("self", on_delete=models.CASCADE, blank=True, null=True)
+
+    class Meta:
+        """Metadata."""
+
+        constraints = [
+            constraints.UniqueConstraint(fields=["name"], name="stt_uniq_name"),
+        ]
 
     def __str__(self):
         """Return the STT's name."""

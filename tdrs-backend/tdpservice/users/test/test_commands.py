@@ -1,6 +1,6 @@
 """Commands tests."""
 
-from django.core.management import CommandError, call_command
+from django.core.management import call_command
 
 import pytest
 
@@ -19,6 +19,7 @@ def test_populating_regions_stts():
 
 @pytest.mark.django_db
 def test_no_double_population(stts):
-    """Test the population command raises an excepion if objects already exist."""
-    with pytest.raises(CommandError):
-        call_command("populate_stts")
+    """Test the population command doesn't create extra objects."""
+    original_stt_count = STT.objects.count()
+    call_command("populate_stts")
+    assert STT.objects.count() == original_stt_count
