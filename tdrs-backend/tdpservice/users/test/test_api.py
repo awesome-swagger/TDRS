@@ -116,3 +116,21 @@ def test_set_profile_bad_role(api_client, user, stts):
         },
     )
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.django_db
+def test_set_profile_with_only_name(api_client, user, stts):
+    """Test setting profile with partial data."""
+    api_client.login(username=user.username, password="test_password")
+    response = api_client.post(
+        "/v1/users/set_profile/", {"first_name": "Joe", "last_name": "Bloggs"},
+    )
+    assert response.data == {
+        "first_name": "Joe",
+        "last_name": "Bloggs",
+        "stt": None,
+        "requested_role": None,
+    }
+    user.refresh_from_db()
+    assert user.first_name == "Joe"
+    assert user.last_name == "Bloggs"
