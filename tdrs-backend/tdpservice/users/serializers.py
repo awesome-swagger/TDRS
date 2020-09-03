@@ -86,3 +86,25 @@ class SetUserProfileSerializer(serializers.ModelSerializer):
 
         model = User
         fields = ["first_name", "last_name", "requested_role", "stt"]
+
+    def validate_requested_role(self, value):
+        """Validate that the requested role can be set.
+
+        This can only be set if there is no `role` or `requested_role` already set.
+        """
+        user = self.context["request"].user
+        if user.role:
+            raise serializers.ValidationError(
+                "Cannot set requested role after a role is set."
+            )
+        if user.requested_role:
+            raise serializers.ValidationError(
+                "Cannot modify requested role after it is set."
+            )
+        return value
+
+    def validate_stt(self, value):
+        """Validate that the STT cannot be changed once set."""
+        if self.context["request"].user.stt:
+            raise serializers.ValidationError("Cannot modify STT after it is set.")
+        return value

@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 
 import pytest
 from rest_framework import status
+from rest_framework.serializers import ErrorDetail
 
 from ..models import STT
 
@@ -134,3 +135,95 @@ def test_set_profile_with_only_name(api_client, user, stts):
     user.refresh_from_db()
     assert user.first_name == "Joe"
     assert user.last_name == "Bloggs"
+
+
+@pytest.mark.django_db
+def test_set_profile_already_set_role(api_client, user, stts):
+    """Test a user cannot request a role once already given one."""
+    user.role = User.Role.OFA_ANALYST
+    user.save()
+    api_client.login(username=user.username, password="test_password")
+    stt_id = STT.objects.first().id
+    response = api_client.put(
+        "/v1/users/set_profile/",
+        {
+            "first_name": "Joe",
+            "last_name": "Bloggs",
+            "stt": stt_id,
+            "requested_role": User.Role.ADMIN,
+        },
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.data == {
+        "requested_role": [
+            ErrorDetail(
+                string="Cannot set requested role after a role is set.", code="invalid",
+            )
+        ]
+    }
+
+
+@pytest.mark.django_db
+def test_set_profile_already_requested_role(api_client, user, stts):
+    """Test a user cannot request a role once already requested one."""
+    user.requested_role = User.Role.OFA_ANALYST
+    user.save()
+    api_client.login(username=user.username, password="test_password")
+    stt_id = STT.objects.first().id
+    response = api_client.put(
+        "/v1/users/set_profile/",
+        {
+            "first_name": "Joe",
+            "last_name": "Bloggs",
+            "stt": stt_id,
+            "requested_role": User.Role.ADMIN,
+        },
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.data == {
+        "requested_role": [
+            ErrorDetail(
+                string="Cannot modify requested role after it is set.", code="invalid"
+            )
+        ]
+    }
+
+
+@pytest.mark.django_db
+def test_set_profile_already_set_stt(api_client, user, stts):
+    """Test a user cannot request a role once already requested one."""
+    user.stt = STT.objects.first()
+    user.save()
+    api_client.login(username=user.username, password="test_password")
+    stt_id = STT.objects.first().id
+    response = api_client.put(
+        "/v1/users/set_profile/",
+        {
+            "first_name": "Joe",
+            "last_name": "Bloggs",
+            "stt": stt_id,
+            "requested_role": User.Role.ADMIN,
+        },
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.data == {
+        "stt": [
+            ErrorDetail(string="Cannot modify STT after it is set.", code="invalid")
+        ]
+    }
+
+
+@pytest.mark.django_db
+def test_update_profile(api_client, user, stts):
+    """Test user can update first name and last name after setting role and STT."""
+    user.stt = STT.objects.first()
+    user.requested_role = User.Role.DATA_PREPPER
+    user.save()
+    api_client.login(username=user.username, password="test_password")
+    response = api_client.put(
+        "/v1/users/set_profile/", {"first_name": "Freya", "last_name": "Blaggs"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    user.refresh_from_db()
+    assert user.first_name == "Freya"
+    assert user.last_name == "Blaggs"
