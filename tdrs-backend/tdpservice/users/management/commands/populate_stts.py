@@ -16,6 +16,7 @@ def _populate_regions():
         reader = csv.DictReader(csvfile)
         regions = [Region(row["Id"]) for row in reader]
         Region.objects.bulk_create(regions)
+        Region.objects.create(id=1000)
 
 
 def _get_states():
@@ -77,3 +78,4 @@ class Command(BaseCommand):
         stts.extend(_get_territories())
         STT.objects.bulk_create(stts)
         _populate_tribes()
+        STT.objects.create(id=-1, region_id=1000, name="I work at OFA")

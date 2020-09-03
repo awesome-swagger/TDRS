@@ -50,6 +50,8 @@ def test_get_stts(api_client, user, stts):
     assert response.status_code == status.HTTP_200_OK
     assert response.data[0]["id"] == 1
     assert response.data[0]["stts"][0]["name"] == "Connecticut"
+    assert response.data[-1]["id"] == 1000
+    assert response.data[-1]["stts"][0]["name"] == "I work at OFA"
 
 
 @pytest.mark.django_db

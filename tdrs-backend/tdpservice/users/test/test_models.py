@@ -19,4 +19,4 @@ def test_region_string_representation(stts):
 @pytest.mark.django_db
 def test_stt_string_representation(stts):
     """Test STT string representation."""
-    assert str(STT.objects.first()) == "Alabama"
+    assert str(STT.objects.filter(type=STT.STTType.STATE).first()) == "Alabama"

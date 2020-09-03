@@ -1,6 +1,6 @@
 """Define API views for user class."""
 
-from django.db.models import Prefetch
+from django.db.models import F, Prefetch
 
 from rest_framework import generics, mixins, viewsets
 from rest_framework.decorators import action
